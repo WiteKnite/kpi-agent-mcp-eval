@@ -59,4 +59,32 @@ rule are unchanged.
 
 ## Results
 
-(Appended below as each step is run.)
+Development window, origins 9 to 15, horizon 3. Full tables in `eval/results/dev_step*.json`.
+
+**Step 1 (total series, baselines).** Conversion: `ma3` 1.31 vs naive 1.57 (gap -0.25, CI
+[-0.59, +0.03]; not clearly different from zero). Leads: naive best. Response: `ma3` and naive tie
+(0.087 vs 0.089). The tool's model (`trend6_all`) loses on leads and response.
+
+**Step 2 (post-launch training, log response).** Post-launch training removes most of the response
+failure: `trend6_post` 0.103 minutes vs `trend6_all` 36.5. Still not better than naive (0.089).
+Log transform makes no difference (0.104). For conversion, `trend6_post` (1.47) is not better than
+`ma3`.
+
+**Step 3 (10 series: total, 4 channels, 5 reps; 210 points per model).**
+- Conversion: `ma3` MAE 3.38 vs naive 4.30 (gap -0.92, CI [-1.27, -0.55]). Better on MAPE too
+  (53% vs 73%).
+- Leads: `ma3` MAE 8.16 vs naive 9.16 (gap -1.00, CI [-1.67, -0.30]). Better on MAPE too.
+- Response: `ma3` MAE 0.126 vs naive 0.140 (gap -0.015, CI [-0.028, -0.002]). Statistically
+  distinguishable from zero but tiny in practice.
+
+**Choice by rule:** `ma3` for all three metrics.
+
+**Holt (conditional).** Not run. The trigger is that the chosen model still has a dev MAE above
+naive for some metric. Here it is below naive on all three, so the condition is not met.
+
+**Caveat on the noise floor.** The floor reported in step 3 is still computed on the total
+series. Channel and rep series have fewer leads per month, so their real floor is higher, and the
+model-to-floor comparisons for segments are understated. The gaps versus naive are unaffected.
+
+**Holdout:** choice recorded as `ma3` for every metric. The holdout (2026-07 to 2026-12) is
+evaluated once, next.
