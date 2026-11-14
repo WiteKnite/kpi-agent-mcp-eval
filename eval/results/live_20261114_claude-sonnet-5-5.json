@@ -1,0 +1,90 @@
+{
+  "model": "claude-sonnet-5-5",
+  "date": "2026-11-14",
+  "passed": 9,
+  "total": 9,
+  "results": [
+    {
+      "id": "conv_dec",
+      "pass": true,
+      "answer": "The lead-to-contract conversion rate in 2025-12 was **6.09%**. That is 12 conversions from 197 leads.",
+      "tool_calls": [
+        "kpi_summary"
+      ]
+    },
+    {
+      "id": "resp_dec",
+      "pass": true,
+      "answer": "The average first-response time in 2025-12 was **3.1 minutes**. That month had 197 leads.",
+      "tool_calls": [
+        "kpi_summary"
+      ]
+    },
+    {
+      "id": "resp_jun",
+      "pass": true,
+      "answer": "The average first-response time in 2025-06 was **143.9 minutes**. That figure covers all 178 leads for the month.",
+      "tool_calls": [
+        "kpi_summary"
+      ]
+    },
+    {
+      "id": "leads_q4",
+      "pass": true,
+      "answer": "There were **591 leads** created in Q4 2025. By month, that was 206 in October, 188 in November and 197 in December. A direct count of the leads table also gives 591, with no duplicate IDs.",
+      "tool_calls": [
+        "kpi_summary",
+        "kpi_summary",
+        "kpi_summary",
+        "list_tables",
+        "describe_table",
+        "run_query"
+      ]
+    },
+    {
+      "id": "best_channel_dec",
+      "pass": true,
+      "answer": "**Email** had the highest conversion rate in 2025-12, at **10.0%** (6 conversions from 60 leads).\n\nThe other channels were lower:\n- Web form: 8.2%\n- WhatsApp: 2.08%\n- Phone: 0.0%",
+      "tool_calls": [
+        "kpi_summary",
+        "kpi_summary",
+        "kpi_summary",
+        "kpi_summary"
+      ]
+    },
+    {
+      "id": "top_driver",
+      "pass": true,
+      "answer": "**Email** contributed most to the change in conversion rate between 2025-06 and 2025-12. It added about **+3.05 percentage points**. Its own conversion rate went from 0.0% to 10.0%.\n\nThe other channels contributed:\n- Web form: +1.39 points\n- Phone: \u22120.55 points\n- WhatsApp: \u22120.32 points",
+      "tool_calls": [
+        "kpi_drivers"
+      ]
+    },
+    {
+      "id": "conv_whatsapp_dec",
+      "pass": true,
+      "answer": "WhatsApp leads converted at **2.08%** in 2025-12. That is 1 conversion from 48 leads.",
+      "tool_calls": [
+        "kpi_summary"
+      ]
+    },
+    {
+      "id": "conv_amira_dec",
+      "pass": true,
+      "answer": "Amira's conversion rate in 2025-12 was **4.35%**. She had 2 conversions from 46 leads.",
+      "tool_calls": [
+        "kpi_summary"
+      ]
+    },
+    {
+      "id": "top_rep_q4",
+      "pass": true,
+      "answer": "**Chen** had the highest conversion rate in Q4 2025 (October to December). Chen converted 9 of 104 leads, which is 8.65%. Amira was next at 7.63%.",
+      "tool_calls": [
+        "list_tables",
+        "describe_table",
+        "run_query"
+      ]
+    }
+  ]
+}
