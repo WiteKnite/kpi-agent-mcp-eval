@@ -7,6 +7,7 @@ Scoring: numbers match within a tolerance; text must contain the expected name.
 """
 import argparse
 import json
+import os
 import pathlib
 import re
 import sys
@@ -65,18 +66,36 @@ def main() -> int:
         from kpi_agent import agent
 
     passed = 0
+    rows = []
     for item in QUESTIONS:
+        tool_calls = []
         if args.offline:
             ok, text = score(item, offline_answer(item)), "(offline)"
         else:
             result = agent.answer(item["question"])
             text = result["answer"]
+            tool_calls = result.get("tool_calls", [])
             ok = score(item, text)
             tracing.score_current_trace("correct", 1.0 if ok else 0.0, comment=item["id"])
         passed += ok
+        rows.append({"id": item["id"], "pass": ok, "answer": text, "tool_calls": tool_calls})
         print(f"{'PASS' if ok else 'FAIL'}  {item['id']:18} {text[:80]}")
     tracing.flush()
     print(f"\n{passed}/{len(QUESTIONS)} passed")
+    if not args.offline:
+        # Save every live run so the README can point at the evidence.
+        from datetime import date
+
+        model = os.getenv("ANTHROPIC_MODEL", agent.MODEL)
+        out_dir = ROOT / "eval" / "results"
+        out_dir.mkdir(parents=True, exist_ok=True)
+        out = out_dir / f"live_{date.today():%Y%m%d}_{model}.json"
+        out.write_text(
+            json.dumps({"model": model, "date": str(date.today()), "passed": passed,
+                        "total": len(QUESTIONS), "results": rows}, indent=2),
+            encoding="utf-8",
+        )
+        print(f"Saved {out}")
     return 0 if passed == len(QUESTIONS) else 1
 
 
