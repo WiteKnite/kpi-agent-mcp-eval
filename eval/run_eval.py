@@ -88,14 +88,16 @@ def main() -> int:
     print(f"\n{passed}/{len(QUESTIONS)} passed")
     if not args.offline:
         # Save every live run so the README can point at the evidence.
-        from datetime import date
+        from datetime import datetime
 
+        now = datetime.now()
         model = os.getenv("ANTHROPIC_MODEL", agent.MODEL)
         out_dir = ROOT / "eval" / "results"
         out_dir.mkdir(parents=True, exist_ok=True)
-        out = out_dir / f"live_{date.today():%Y%m%d}_{model}.json"
+        # Time in the name, so two runs on the same day never overwrite each other.
+        out = out_dir / f"live_{now:%Y%m%d_%H%M%S}_{len(QUESTIONS)}q_{model}.json"
         out.write_text(
-            json.dumps({"model": model, "date": str(date.today()), "passed": passed,
+            json.dumps({"model": model, "date": now.isoformat(timespec="seconds"), "passed": passed,
                         "total": len(QUESTIONS), "results": rows}, indent=2),
             encoding="utf-8",
         )
