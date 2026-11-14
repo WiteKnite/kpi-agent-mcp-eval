@@ -95,9 +95,10 @@ never produces the expected values, so a wrong answer is caught instead of grade
   can swing a lot. Read per-channel and per-rep rates as indicative, not precise.
 - The offline tests and the golden-set check run without an API key. The online agent run and the
   Langfuse integration need keys and are not part of the automated tests.
-- Manual live runs: the agent passed 6 of 6 questions in two complete runs with the default model
-  (November 2026). Those runs predate the three channel and rep questions, which have not yet been
-  run live. Langfuse tracing has not been exercised yet.
+- Live run: the agent passed 9 of 9 questions on 14 November 2026 with `claude-sonnet-5-5`. The
+  result is saved in `eval/results/live_20261114_claude-sonnet-5-5.json`. Two earlier runs (6 of 6
+  each) were recorded in text only. Langfuse tracing has not been exercised yet. None of the 9
+  questions asks about forecasts, so the forecast tool has no live check yet.
 - `kpi_drivers` ignores mix effects, so its contributions only approximate the total change.
 - `forecast_kpi` uses the mean of the last 3 months, the model the forecast study chose. It is not a
   statistical model. The 2026 months continue the 2025 post-launch pattern, so backtests on them are
