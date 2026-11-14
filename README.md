@@ -33,7 +33,7 @@ pip install -r requirements.txt
 
 python data/generate_data.py      # creates data/sales.db
 python eval/build_golden.py       # regenerates eval/questions.json (already committed)
-pytest                            # tools and golden set, no API key needed
+pytest                            # 17 tests, no API key needed
 python eval/run_eval.py --offline # validates the golden set against the tools
 ```
 
@@ -47,6 +47,33 @@ python -m kpi_agent.mcp_server    # serve the tools to any MCP client
 
 Set `LANGFUSE_PUBLIC_KEY` and `LANGFUSE_SECRET_KEY` to send traces and a `correct` score per
 question to Langfuse.
+
+## Demo in five minutes
+
+1. `pytest` shows the tools, the read-only guard, a real MCP round trip over stdio, and the agent
+   loop (with a stubbed model client) all passing.
+2. `python eval/run_eval.py --offline` shows the golden questions and their SQL-derived answers.
+3. Open the tools in an MCP client. For example, with the MCP Inspector:
+
+   ```bash
+   npx @modelcontextprotocol/inspector python -m kpi_agent.mcp_server
+   ```
+
+   Run from the repo root with `PYTHONPATH=src`. Any MCP client works with this server entry:
+
+   ```json
+   {
+     "mcpServers": {
+       "kpi-agent": {
+         "command": "python",
+         "args": ["-m", "kpi_agent.mcp_server"],
+         "env": {"PYTHONPATH": "/absolute/path/to/kpi-agent-mcp-eval/src"}
+       }
+     }
+   }
+   ```
+4. With `ANTHROPIC_API_KEY` set, `python eval/run_eval.py` runs the real agent on every question and
+   prints PASS or FAIL per question. A FAIL is a useful result: it shows what the evaluation catches.
 
 ## What the evaluation does
 
