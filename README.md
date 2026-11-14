@@ -90,15 +90,18 @@ never produces the expected values, so a wrong answer is caught instead of grade
 
 ## Limits
 
-- Synthetic data and nine questions: a demonstration of the method, not a benchmark.
+- Synthetic data and eleven questions: a demonstration of the method, not a benchmark. Two of the
+  eleven (`fc_conv_jan27`, `fc_leads_jan27`) check that the agent calls `forecast_kpi` and reports its
+  number. Their expected values are a plain SQL average of the last three months. They test the
+  agent's tool use, not forecast accuracy.
 - Channel and rep cells have few conversions each (often under 10 a month), so a single rate
   can swing a lot. Read per-channel and per-rep rates as indicative, not precise.
 - The offline tests and the golden-set check run without an API key. The online agent run and the
   Langfuse integration need keys and are not part of the automated tests.
 - Live run: the agent passed 9 of 9 questions on 14 November 2026 with `claude-sonnet-5-5`. The
   result is saved in `eval/results/live_20261114_claude-sonnet-5-5.json`. Two earlier runs (6 of 6
-  each) were recorded in text only. Langfuse tracing has not been exercised yet. None of the 9
-  questions asks about forecasts, so the forecast tool has no live check yet.
+  each) were recorded in text only. Langfuse tracing has not been exercised yet. The two forecast
+  questions were added after that run and have not yet been run live.
 - `kpi_drivers` ignores mix effects, so its contributions only approximate the total change.
 - `forecast_kpi` uses the mean of the last 3 months, the model the forecast study chose. It is not a
   statistical model. The 2026 months continue the 2025 post-launch pattern, so backtests on them are

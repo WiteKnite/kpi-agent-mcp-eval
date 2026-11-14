@@ -40,6 +40,10 @@ def offline_answer(item: dict) -> str:
         return str(tools.kpi_summary("2025-12", channel="whatsapp")["conversion_rate_pct"])
     if qid == "conv_amira_dec":
         return str(tools.kpi_summary("2025-12", rep="Amira")["conversion_rate_pct"])
+    if qid == "fc_conv_jan27":
+        return str(tools.forecast_kpi("conversion_rate_pct", 1)["forecast"][0]["value"])
+    if qid == "fc_leads_jan27":
+        return str(tools.forecast_kpi("leads", 1)["forecast"][0]["value"])
     if qid == "top_rep_q4":
         sql = (
             "SELECT rep FROM leads WHERE month IN ('2025-10','2025-11','2025-12') GROUP BY rep "

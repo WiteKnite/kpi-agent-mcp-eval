@@ -58,5 +58,19 @@
     "question": "Which sales rep had the highest conversion rate in Q4 2025 (October to December)?",
     "expected": "Chen",
     "kind": "text"
+  },
+  {
+    "id": "fc_conv_jan27",
+    "question": "Use the forecast tool: what is the forecast conversion rate in percent for 2027-01?",
+    "expected": 8.97,
+    "kind": "number",
+    "tolerance": 0.05
+  },
+  {
+    "id": "fc_leads_jan27",
+    "question": "Use the forecast tool: how many leads are forecast for 2027-01?",
+    "expected": 199.33,
+    "kind": "number",
+    "tolerance": 0.5
   }
 ]

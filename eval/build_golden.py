@@ -21,6 +21,14 @@ def build() -> list[dict]:
     top_driver = tools.kpi_drivers("2025-06", "2025-12", "channel")[0]["channel"]
     whatsapp_dec = tools.kpi_summary("2025-12", channel="whatsapp")
     amira_dec = tools.kpi_summary("2025-12", rep="Amira")
+    # Forecast checks: the expected value is the 3-month average computed in SQL, independently of
+    # the tool's Python code. It checks that the agent calls forecast_kpi and reports its number.
+    last3 = tools.run_query(
+        "SELECT month, 100.0*SUM(converted)/COUNT(*) AS rate, COUNT(*) AS n FROM leads "
+        "WHERE month IN ('2026-10','2026-11','2026-12') GROUP BY month"
+    )
+    fc_conv = round(sum(r["rate"] for r in last3) / len(last3), 2)
+    fc_leads = round(sum(r["n"] for r in last3) / len(last3), 2)
     top_rep_q4 = tools.run_query(
         "SELECT rep FROM leads WHERE month IN ('2025-10','2025-11','2025-12') GROUP BY rep "
         "ORDER BY 1.0*SUM(converted)/COUNT(*) DESC LIMIT 1"
@@ -85,6 +93,20 @@ def build() -> list[dict]:
             "question": "Which sales rep had the highest conversion rate in Q4 2025 (October to December)?",
             "expected": top_rep_q4,
             "kind": "text",
+        },
+        {
+            "id": "fc_conv_jan27",
+            "question": "Use the forecast tool: what is the forecast conversion rate in percent for 2027-01?",
+            "expected": fc_conv,
+            "kind": "number",
+            "tolerance": 0.05,
+        },
+        {
+            "id": "fc_leads_jan27",
+            "question": "Use the forecast tool: how many leads are forecast for 2027-01?",
+            "expected": fc_leads,
+            "kind": "number",
+            "tolerance": 0.5,
         },
     ]
 
