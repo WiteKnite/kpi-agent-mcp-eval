@@ -1,0 +1,4 @@
+mcp>=1.2,<2
+anthropic>=0.40
+langfuse>=3.0
+pytest>=8.0
