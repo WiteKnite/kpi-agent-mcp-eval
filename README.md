@@ -14,8 +14,8 @@ It is not a production system.
 ## Layout
 
 ```
-data/generate_data.py      synthetic, deterministic SQLite funnel data (12 months of leads)
-src/kpi_agent/tools.py     read-only tools: list_tables, describe_table, run_query, kpi_summary (optional channel and rep filters), kpi_drivers
+data/generate_data.py      synthetic, deterministic SQLite funnel data (24 months of leads, 2025-2026)
+src/kpi_agent/tools.py     read-only tools: list_tables, describe_table, run_query, kpi_summary (optional channel and rep filters), kpi_drivers, forecast_kpi
 src/kpi_agent/mcp_server.py  MCP server (stdio) exposing the same tools
 src/kpi_agent/agent.py     tool-use loop with the Anthropic SDK
 src/kpi_agent/tracing.py   optional Langfuse tracing (no-op without keys)
@@ -33,7 +33,7 @@ pip install -r requirements.txt
 
 python data/generate_data.py      # creates data/sales.db
 python eval/build_golden.py       # regenerates eval/questions.json (already committed)
-pytest                            # 23 tests, no API key needed
+pytest                            # 35 tests, no API key needed
 python eval/run_eval.py --offline # validates the golden set against the tools
 ```
 
@@ -99,6 +99,27 @@ never produces the expected values, so a wrong answer is caught instead of grade
   (November 2026). Those runs predate the three channel and rep questions, which have not yet been
   run live. Langfuse tracing has not been exercised yet.
 - `kpi_drivers` ignores mix effects, so its contributions only approximate the total change.
+- `forecast_kpi` is a linear trend over the last 6 months, not a statistical model. The 2026 months
+  continue the 2025 post-launch trend, so backtests on them are kinder to the model than real data
+  would be.
+- The backtest uses 16 forecast origins with a 3-month horizon, all on synthetic data. Its MAE
+  and MAPE can disagree, so both are reported.
+
+## Forecast backtest
+
+`forecast_kpi` forecasts the next 3 months and backtests the trend model against a naive "last
+value repeats" baseline (rolling origin, 16 origins, horizon 3). Output from the current data:
+
+| Metric | Model MAE | Naive MAE | Model MAPE % | Naive MAPE % | Beats naive on MAE | Beats naive on MAPE |
+|---|---|---|---|---|---|---|
+| Conversion rate (%) | 1.62 | 1.70 | 23.5 | 23.0 | yes | no |
+| Leads per month | 20.4 | 17.6 | 9.9 | 8.6 | no | no |
+| Avg first response (min) | 29.5 | 8.9 | 976 | 302 | no | no |
+
+On this data the trend model does not reliably beat the naive baseline. Response time is hard because
+the backtest origins include pre-launch months around 140 minutes, and the trend extrapolates that
+regime. These numbers are reproducible from `forecast_kpi`, but the agent's answers about them have
+not yet been checked with a live model run.
 
 ## Next steps
 

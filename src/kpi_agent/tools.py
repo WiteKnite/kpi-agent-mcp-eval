@@ -121,10 +121,113 @@ def kpi_drivers(month_from: str, month_to: str, dimension: str = "channel") -> l
     return sorted(out, key=lambda r: abs(r["contribution_pct_points"]), reverse=True)
 
 
+FORECAST_SQL = {
+    "conversion_rate_pct": "100.0 * SUM(converted) / COUNT(*)",
+    "leads": "COUNT(*)",
+    "avg_first_response_minutes": "AVG(first_response_minutes)",
+}
+MAX_HORIZON = 6
+MIN_TRAIN = 6  # months of history before the first backtest forecast
+TREND_WINDOW = 6  # the trend is fitted on the most recent months only
+
+
+def _monthly_series(metric: str) -> tuple[list[str], list[float]]:
+    with _connect() as con:
+        rows = con.execute(
+            f"SELECT month, {FORECAST_SQL[metric]} AS v FROM leads GROUP BY month ORDER BY month"
+        ).fetchall()
+    return [r["month"] for r in rows], [float(r["v"]) for r in rows]
+
+
+def _add_months(month: str, k: int) -> str:
+    y, m = (int(p) for p in month.split("-"))
+    idx = y * 12 + (m - 1) + k
+    return f"{idx // 12:04d}-{idx % 12 + 1:02d}"
+
+
+def _trend_forecast(history: list[float], horizon: int) -> list[float]:
+    """Least-squares line through the last TREND_WINDOW points, extended `horizon` steps."""
+    pts = history[-TREND_WINDOW:]
+    n = len(pts)
+    x_mean, y_mean = (n - 1) / 2, sum(pts) / n
+    var = sum((x - x_mean) ** 2 for x in range(n))
+    slope = sum((x - x_mean) * (y - y_mean) for x, y in enumerate(pts)) / var if var else 0.0
+    return [y_mean + slope * (n - 1 + k - x_mean) for k in range(1, horizon + 1)]
+
+
+def _naive_forecast(history: list[float], horizon: int) -> list[float]:
+    """'Last value repeats' baseline."""
+    return [history[-1]] * horizon
+
+
+def _errors(actual: list[float], predicted: list[float]) -> tuple[float, float | None]:
+    """Return (MAE, MAPE %). MAPE skips months whose actual value is zero."""
+    abs_err = [abs(a - p) for a, p in zip(actual, predicted)]
+    pct = [abs(a - p) / abs(a) for a, p in zip(actual, predicted) if a]
+    mae = sum(abs_err) / len(abs_err)
+    mape = 100 * sum(pct) / len(pct) if pct else None
+    return round(mae, 4), (round(mape, 2) if mape is not None else None)
+
+
+def _backtest(series: list[float], horizon: int) -> dict[str, Any]:
+    """Rolling-origin backtest: at each origin, forecast only from the months before it."""
+    origins = range(MIN_TRAIN, len(series) - horizon + 1)
+    if not origins:
+        raise ValueError("not enough history to backtest this horizon")
+    actual, model_pred, naive_pred = [], [], []
+    for t in origins:
+        history, future = series[:t], series[t : t + horizon]
+        actual += future
+        model_pred += _trend_forecast(history, horizon)
+        naive_pred += _naive_forecast(history, horizon)
+    model_mae, model_mape = _errors(actual, model_pred)
+    naive_mae, naive_mape = _errors(actual, naive_pred)
+    return {
+        "origins": len(origins),
+        "model_mae": model_mae,
+        "model_mape_pct": model_mape,
+        "naive_mae": naive_mae,
+        "naive_mape_pct": naive_mape,
+        # Each measure is reported separately: the two can disagree.
+        "beats_naive_mae": model_mae < naive_mae,
+        "beats_naive_mape": (
+            model_mape < naive_mape if model_mape is not None and naive_mape is not None else None
+        ),
+    }
+
+
+def forecast_kpi(metric: str, horizon: int = 3) -> dict[str, Any]:
+    """Forecast a monthly KPI for the next 1 to 6 months, with a backtest against a naive baseline.
+
+    metric: conversion_rate_pct, leads or avg_first_response_minutes.
+    The forecast is a linear trend over the last 6 months. The backtest reports the trend model's
+    error next to the 'last value repeats' baseline, even when the baseline is better.
+    """
+    if metric not in FORECAST_SQL:
+        raise ValueError(f"metric must be one of {sorted(FORECAST_SQL)}")
+    horizon = int(horizon)
+    if not 1 <= horizon <= MAX_HORIZON:
+        raise ValueError(f"horizon must be between 1 and {MAX_HORIZON}")
+    months, series = _monthly_series(metric)
+    last = months[-1]
+    values = _trend_forecast(series, horizon)
+    return {
+        "metric": metric,
+        "horizon": horizon,
+        "last_actual_month": last,
+        "forecast": [
+            {"month": _add_months(last, k), "value": round(v, 2)}
+            for k, v in enumerate(values, start=1)
+        ],
+        "backtest": _backtest(series, horizon),
+    }
+
+
 TOOLS = {
     "list_tables": list_tables,
     "describe_table": describe_table,
     "run_query": run_query,
     "kpi_summary": kpi_summary,
     "kpi_drivers": kpi_drivers,
+    "forecast_kpi": forecast_kpi,
 }

@@ -109,3 +109,49 @@ def test_filters_without_values_match_the_unfiltered_summary():
 def test_unknown_filter_value_raises(kwargs):
     with pytest.raises(ValueError, match="unknown"):
         tools.kpi_summary("2025-12", **kwargs)
+
+
+def test_forecast_months_continue_after_last_actual():
+    result = tools.forecast_kpi("leads", 3)
+    assert result["last_actual_month"] == "2026-12"
+    assert [f["month"] for f in result["forecast"]] == ["2027-01", "2027-02", "2027-03"]
+
+
+def test_forecast_month_labels_roll_over_the_year():
+    assert tools._add_months("2025-11", 2) == "2026-01"
+    assert tools._add_months("2025-12", 1) == "2026-01"
+
+
+def test_forecast_backtest_reports_model_and_baseline_errors():
+    bt = tools.forecast_kpi("conversion_rate_pct", 3)["backtest"]
+    for key in ("model_mae", "model_mape_pct", "naive_mae", "naive_mape_pct"):
+        assert isinstance(bt[key], float), key
+    assert bt["origins"] >= 1
+    assert bt["beats_naive_mae"] == (bt["model_mae"] < bt["naive_mae"])
+    assert bt["beats_naive_mape"] == (bt["model_mape_pct"] < bt["naive_mape_pct"])
+
+
+def test_trend_forecast_of_constant_series_is_constant():
+    assert tools._trend_forecast([5.0] * 8, 3) == pytest.approx([5.0, 5.0, 5.0])
+
+
+def test_naive_baseline_repeats_last_value():
+    assert tools._naive_forecast([1.0, 2.0, 7.5], 2) == [7.5, 7.5]
+
+
+def test_error_metrics_on_known_values():
+    mae, mape = tools._errors([1.0, 2.0], [2.0, 2.0])
+    assert mae == 0.5
+    assert mape == 50.0  # (|1-2|/1 + |2-2|/2) / 2 = 0.5
+
+
+@pytest.mark.parametrize("metric", ["revenue", "", "conversion_rate"])
+def test_forecast_rejects_unknown_metric(metric):
+    with pytest.raises(ValueError, match="metric"):
+        tools.forecast_kpi(metric, 3)
+
+
+@pytest.mark.parametrize("horizon", [0, 7, -1])
+def test_forecast_rejects_bad_horizon(horizon):
+    with pytest.raises(ValueError, match="horizon"):
+        tools.forecast_kpi("leads", horizon)

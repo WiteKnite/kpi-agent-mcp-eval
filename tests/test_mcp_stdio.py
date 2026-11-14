@@ -29,12 +29,19 @@ def _run(tmp_path, calls):
     return asyncio.run(asyncio.wait_for(go(), timeout=60))
 
 
-def test_server_lists_the_five_tools(tmp_path):
+def test_server_lists_the_six_tools(tmp_path):
     async def calls(session):
         return [t.name for t in (await session.list_tools()).tools]
 
     names = _run(tmp_path, calls)
-    assert set(names) == {"list_tables", "describe_table", "run_query", "kpi_summary", "kpi_drivers"}
+    assert set(names) == {
+        "list_tables",
+        "describe_table",
+        "run_query",
+        "kpi_summary",
+        "kpi_drivers",
+        "forecast_kpi",
+    }
 
 
 def test_kpi_summary_over_mcp(tmp_path):

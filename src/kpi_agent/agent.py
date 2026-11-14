@@ -74,6 +74,26 @@ TOOL_SCHEMAS = [
             "required": ["month_from", "month_to"],
         },
     },
+    {
+        "name": "forecast_kpi",
+        "description": (
+            "Forecast a monthly KPI for the next 1 to 6 months (linear trend over the last 6 months), "
+            "with a rolling backtest that reports the model's error next to a naive 'last value' baseline. "
+            "Quote the baseline's error too, and say whether the model beats it on MAE and on MAPE "
+            "separately, since the two can disagree."
+        ),
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "metric": {
+                    "type": "string",
+                    "enum": ["conversion_rate_pct", "leads", "avg_first_response_minutes"],
+                },
+                "horizon": {"type": "integer", "minimum": 1, "maximum": 6},
+            },
+            "required": ["metric"],
+        },
+    },
 ]
 
 

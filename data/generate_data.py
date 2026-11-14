@@ -11,7 +11,8 @@ import sqlite3
 SEED = 42
 CHANNELS = ["web_form", "whatsapp", "phone", "email"]
 REPS = ["Amira", "Bruno", "Chen", "Dana", "Eli"]
-MONTHS = [f"2025-{m:02d}" for m in range(1, 13)]
+# 24 months. 2026 is appended after 2025, so the 2025 rows are unchanged.
+MONTHS = [f"{y}-{m:02d}" for y in (2025, 2026) for m in range(1, 13)]
 LAUNCH_MONTH = "2025-07"
 DB_PATH = pathlib.Path(__file__).with_name("sales.db")
 

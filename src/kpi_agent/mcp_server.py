@@ -15,6 +15,7 @@ for _fn in (
     tools.run_query,
     tools.kpi_summary,
     tools.kpi_drivers,
+    tools.forecast_kpi,
 ):
     mcp.tool()(_fn)
 
