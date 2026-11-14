@@ -92,7 +92,9 @@ never produces the expected values, so a wrong answer is caught instead of grade
 
 - Synthetic data and six questions: a demonstration of the method, not a benchmark.
 - The offline tests and the golden-set check run without an API key. The online agent run and the
-  Langfuse integration need keys and were not exercised in the automated tests.
+  Langfuse integration need keys and are not part of the automated tests.
+- Manual live runs: the agent passed 6 of 6 questions in two complete runs with the default model
+  (November 2026). Langfuse tracing has not been exercised yet.
 - `kpi_drivers` ignores mix effects, so its contributions only approximate the total change.
 
 ## Next steps
