@@ -86,5 +86,9 @@ naive for some metric. Here it is below naive on all three, so the condition is 
 series. Channel and rep series have fewer leads per month, so their real floor is higher, and the
 model-to-floor comparisons for segments are understated. The gaps versus naive are unaffected.
 
-**Holdout:** choice recorded as `ma3` for every metric. The holdout (2026-07 to 2026-12) is
-evaluated once, next.
+**Holdout:** choice recorded as `ma3` for every metric. The holdout (2026-07 to 2026-12) was
+evaluated once (`eval/results/holdout_result.json`, commit `abc7af6`). Horizon 6, pooled over 10 series:
+- Conversion: `ma3` MAE 3.35 vs naive 4.08, gap -0.73, CI [-1.33, -0.13]. Holds.
+- Leads: `ma3` 8.57 vs naive 9.38, gap -0.81, CI [-1.64, +0.08]. Not clear.
+- Response: `ma3` 0.146 vs naive 0.173, gap -0.027, CI [-0.052, -0.003]. Holds, small.
+- The trend model used by `forecast_kpi` does worse on the holdout for all three metrics.

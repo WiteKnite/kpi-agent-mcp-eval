@@ -121,6 +121,26 @@ the backtest origins include pre-launch months around 140 minutes, and the trend
 regime. These numbers are reproducible from `forecast_kpi`, but the agent's answers about them have
 not yet been checked with a live model run.
 
+## Forecast study (pre-registered)
+
+`DECISIONS.md` fixes the data split, candidates and choice rule before any results. `eval/forecast_study.py`
+runs the development steps (`--step 1` to `3`), and its `--holdout` run refuses to repeat.
+
+Development (2025-01 to 2026-06), horizon 3, 210 backtest points per metric across 10 series:
+- Conversion: `ma3` (3-month average) MAE 3.38 vs naive 4.30. Clearly better (CI excludes zero).
+- Leads: `ma3` 8.16 vs naive 9.16. Clearly better.
+- Response time: `ma3` 0.126 min vs naive 0.140. Better, but the difference is tiny.
+- Post-launch training fixed the response-time failure of the trend model (36.5 min error to 0.10).
+  A log transform made no difference.
+
+Holdout (2026-07 to 2026-12), run once, horizon 6, pooled over 10 series:
+- Conversion: `ma3` 3.35 vs naive 4.08 (CI [-1.33, -0.13]). Holds.
+- Leads: `ma3` 8.57 vs naive 9.38 (CI [-1.64, +0.08]). Points the same way, but not clearly.
+- Response time: `ma3` 0.146 vs naive 0.173 (CI [-0.052, -0.003]). Holds, but small.
+
+Limits: one holdout forecast, 6 months, on synthetic data; the 10 series overlap, so the points are
+not independent. `forecast_kpi` still uses the trend model, which the study did not select.
+
 ## Next steps
 
 - Add questions that should be refused or answered "no data", and score those too.
