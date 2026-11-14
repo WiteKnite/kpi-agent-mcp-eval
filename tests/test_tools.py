@@ -135,6 +135,17 @@ def test_trend_forecast_of_constant_series_is_constant():
     assert tools._trend_forecast([5.0] * 8, 3) == pytest.approx([5.0, 5.0, 5.0])
 
 
+def test_ma3_forecast_is_mean_of_last_three_held_flat():
+    assert tools._ma3_forecast([1.0, 2.0, 3.0, 4.0, 10.0], 2) == pytest.approx([17 / 3, 17 / 3])
+
+
+def test_forecast_uses_three_month_average():
+    months, series = tools._monthly_series("leads")
+    result = tools.forecast_kpi("leads", 2)
+    expected = sum(series[-3:]) / 3
+    assert [f["value"] for f in result["forecast"]] == [round(expected, 2)] * 2
+
+
 def test_naive_baseline_repeats_last_value():
     assert tools._naive_forecast([1.0, 2.0, 7.5], 2) == [7.5, 7.5]
 

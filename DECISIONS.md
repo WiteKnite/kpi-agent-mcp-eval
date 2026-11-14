@@ -92,3 +92,10 @@ evaluated once (`eval/results/holdout_result.json`, commit `abc7af6`). Horizon 6
 - Leads: `ma3` 8.57 vs naive 9.38, gap -0.81, CI [-1.64, +0.08]. Not clear.
 - Response: `ma3` 0.146 vs naive 0.173, gap -0.027, CI [-0.052, -0.003]. Holds, small.
 - The trend model used by `forecast_kpi` does worse on the holdout for all three metrics.
+
+## Product change after the holdout
+
+`forecast_kpi` now uses the 3-month average (`ma3`), the choice from the study. The switch was
+made after the holdout had been seen, so the holdout is no longer a clean test of the tool going
+forward. Future forecast changes need a new holdout period. The tool's backtest still starts at
+origin 6, unlike the study's origin 9, which is why its response-time flag differs.

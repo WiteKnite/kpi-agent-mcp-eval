@@ -77,7 +77,7 @@ TOOL_SCHEMAS = [
     {
         "name": "forecast_kpi",
         "description": (
-            "Forecast a monthly KPI for the next 1 to 6 months (linear trend over the last 6 months), "
+            "Forecast a monthly KPI for the next 1 to 6 months (mean of the last 3 months), "
             "with a rolling backtest that reports the model's error next to a naive 'last value' baseline. "
             "Quote the baseline's error too, and say whether the model beats it on MAE and on MAPE "
             "separately, since the two can disagree."

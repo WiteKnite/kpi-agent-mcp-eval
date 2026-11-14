@@ -155,6 +155,11 @@ def _trend_forecast(history: list[float], horizon: int) -> list[float]:
     return [y_mean + slope * (n - 1 + k - x_mean) for k in range(1, horizon + 1)]
 
 
+def _ma3_forecast(history: list[float], horizon: int) -> list[float]:
+    """Mean of the last 3 months, held flat over the horizon. Chosen by the forecast study."""
+    return [sum(history[-3:]) / len(history[-3:])] * horizon
+
+
 def _naive_forecast(history: list[float], horizon: int) -> list[float]:
     """'Last value repeats' baseline."""
     return [history[-1]] * horizon
@@ -178,7 +183,7 @@ def _backtest(series: list[float], horizon: int) -> dict[str, Any]:
     for t in origins:
         history, future = series[:t], series[t : t + horizon]
         actual += future
-        model_pred += _trend_forecast(history, horizon)
+        model_pred += _ma3_forecast(history, horizon)
         naive_pred += _naive_forecast(history, horizon)
     model_mae, model_mape = _errors(actual, model_pred)
     naive_mae, naive_mape = _errors(actual, naive_pred)
@@ -200,8 +205,9 @@ def forecast_kpi(metric: str, horizon: int = 3) -> dict[str, Any]:
     """Forecast a monthly KPI for the next 1 to 6 months, with a backtest against a naive baseline.
 
     metric: conversion_rate_pct, leads or avg_first_response_minutes.
-    The forecast is a linear trend over the last 6 months. The backtest reports the trend model's
-    error next to the 'last value repeats' baseline, even when the baseline is better.
+    The forecast is the mean of the last 3 months, held flat (chosen by the forecast study in
+    DECISIONS.md). The backtest reports its error next to the 'last value repeats' baseline,
+    even when the baseline is better.
     """
     if metric not in FORECAST_SQL:
         raise ValueError(f"metric must be one of {sorted(FORECAST_SQL)}")
@@ -210,7 +216,7 @@ def forecast_kpi(metric: str, horizon: int = 3) -> dict[str, Any]:
         raise ValueError(f"horizon must be between 1 and {MAX_HORIZON}")
     months, series = _monthly_series(metric)
     last = months[-1]
-    values = _trend_forecast(series, horizon)
+    values = _ma3_forecast(series, horizon)
     return {
         "metric": metric,
         "horizon": horizon,

@@ -99,26 +99,28 @@ never produces the expected values, so a wrong answer is caught instead of grade
   (November 2026). Those runs predate the three channel and rep questions, which have not yet been
   run live. Langfuse tracing has not been exercised yet.
 - `kpi_drivers` ignores mix effects, so its contributions only approximate the total change.
-- `forecast_kpi` is a linear trend over the last 6 months, not a statistical model. The 2026 months
-  continue the 2025 post-launch trend, so backtests on them are kinder to the model than real data
-  would be.
+- `forecast_kpi` uses the mean of the last 3 months, the model the forecast study chose. It is not a
+  statistical model. The 2026 months continue the 2025 post-launch pattern, so backtests on them are
+  kinder to the model than real data would be.
 - The backtest uses 16 forecast origins with a 3-month horizon, all on synthetic data. Its MAE
   and MAPE can disagree, so both are reported.
 
 ## Forecast backtest
 
-`forecast_kpi` forecasts the next 3 months and backtests the trend model against a naive "last
-value repeats" baseline (rolling origin, 16 origins, horizon 3). Output from the current data:
+`forecast_kpi` forecasts the next 3 months with the mean of the last 3 months, and backtests it against
+a naive "last value repeats" baseline (rolling origin, 16 origins, horizon 3, origins starting at
+month 6). Output from the current data:
 
 | Metric | Model MAE | Naive MAE | Model MAPE % | Naive MAPE % | Beats naive on MAE | Beats naive on MAPE |
 |---|---|---|---|---|---|---|
-| Conversion rate (%) | 1.62 | 1.70 | 23.5 | 23.0 | yes | no |
-| Leads per month | 20.4 | 17.6 | 9.9 | 8.6 | no | no |
-| Avg first response (min) | 29.5 | 8.9 | 976 | 302 | no | no |
+| Conversion rate (%) | 1.69 | 1.70 | 22.8 | 23.0 | yes | yes |
+| Leads per month | 14.8 | 17.6 | 7.3 | 8.6 | yes | yes |
+| Avg first response (min) | 17.5 | 8.9 | 591 | 302 | no | no |
 
-On this data the trend model does not reliably beat the naive baseline. Response time is hard because
-the backtest origins include pre-launch months around 140 minutes, and the trend extrapolates that
-regime. These numbers are reproducible from `forecast_kpi`, but the agent's answers about them have
+The tool's backtest starts at origin 6, so for response time its early origins still include
+pre-launch months around 140 minutes. The forecast study started at origin 9 and found a tie with
+naive, so the study is the better guide for response time. The conversion and leads results are
+in-sample: the same data helped choose the model. The agent's answers about these forecasts have
 not yet been checked with a live model run.
 
 ## Forecast study (pre-registered)
