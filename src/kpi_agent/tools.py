@@ -127,7 +127,11 @@ FORECAST_SQL = {
     "avg_first_response_minutes": "AVG(first_response_minutes)",
 }
 MAX_HORIZON = 6
-MIN_TRAIN = 6  # months of history before the first backtest forecast
+# Backtest protocol, the same as eval/forecast_study.py (see DECISIONS.md):
+# origins start at month 9 (3+ post-launch months of history) and end inside the development
+# window, so the 2026-07 to 2026-12 holdout is never used to score the tool.
+MIN_TRAIN = 9
+DEV_END = "2026-06"
 TREND_WINDOW = 6  # the trend is fitted on the most recent months only
 
 
@@ -174,9 +178,12 @@ def _errors(actual: list[float], predicted: list[float]) -> tuple[float, float |
     return round(mae, 4), (round(mape, 2) if mape is not None else None)
 
 
-def _backtest(series: list[float], horizon: int) -> dict[str, Any]:
-    """Rolling-origin backtest: at each origin, forecast only from the months before it."""
-    origins = range(MIN_TRAIN, len(series) - horizon + 1)
+def _backtest(series: list[float], horizon: int, dev_len: int) -> dict[str, Any]:
+    """Rolling-origin backtest inside the development window (first dev_len months).
+
+    At each origin, the forecast uses only the months before it.
+    """
+    origins = range(MIN_TRAIN, dev_len - horizon + 1)
     if not origins:
         raise ValueError("not enough history to backtest this horizon")
     actual, model_pred, naive_pred = [], [], []
@@ -225,7 +232,7 @@ def forecast_kpi(metric: str, horizon: int = 3) -> dict[str, Any]:
             {"month": _add_months(last, k), "value": round(v, 2)}
             for k, v in enumerate(values, start=1)
         ],
-        "backtest": _backtest(series, horizon),
+        "backtest": _backtest(series, horizon, dev_len=sum(1 for m in months if m <= DEV_END)),
     }
 
 

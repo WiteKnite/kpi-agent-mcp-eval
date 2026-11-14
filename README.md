@@ -102,26 +102,28 @@ never produces the expected values, so a wrong answer is caught instead of grade
 - `forecast_kpi` uses the mean of the last 3 months, the model the forecast study chose. It is not a
   statistical model. The 2026 months continue the 2025 post-launch pattern, so backtests on them are
   kinder to the model than real data would be.
-- The backtest uses 16 forecast origins with a 3-month horizon, all on synthetic data. Its MAE
-  and MAPE can disagree, so both are reported.
+- The backtest uses 7 development-window origins with a 3-month horizon, on synthetic data. That is
+  a small sample. Its MAE and MAPE can disagree, so both are reported.
 
 ## Forecast backtest
 
 `forecast_kpi` forecasts the next 3 months with the mean of the last 3 months, and backtests it against
-a naive "last value repeats" baseline (rolling origin, 16 origins, horizon 3, origins starting at
-month 6). Output from the current data:
+a naive "last value repeats" baseline. The backtest uses the study's protocol: origins 9 to 15,
+horizon 3, development window only (through 2026-06), so the holdout is never used to score the tool.
+Output from the current data (7 origins):
 
 | Metric | Model MAE | Naive MAE | Model MAPE % | Naive MAPE % | Beats naive on MAE | Beats naive on MAPE |
 |---|---|---|---|---|---|---|
-| Conversion rate (%) | 1.69 | 1.70 | 22.8 | 23.0 | yes | yes |
-| Leads per month | 14.8 | 17.6 | 7.3 | 8.6 | yes | yes |
-| Avg first response (min) | 17.5 | 8.9 | 591 | 302 | no | no |
+| Conversion rate (%) | 1.31 | 1.57 | 17.8 | 22.3 | yes | yes |
+| Leads per month | 20.6 | 19.4 | 10.2 | 9.5 | no | no |
+| Avg first response (min) | 0.087 | 0.089 | 2.9 | 2.9 | yes, negligibly | yes, negligibly |
 
-The tool's backtest starts at origin 6, so for response time its early origins still include
-pre-launch months around 140 minutes. The forecast study started at origin 9 and found a tie with
-naive, so the study is the better guide for response time. The conversion and leads results are
-in-sample: the same data helped choose the model. The agent's answers about these forecasts have
-not yet been checked with a live model run.
+Only conversion beats naive clearly, and the study's confidence interval for that gap still touches
+zero. Leads lose on this protocol. Response time ties. An earlier version of this table, which
+included the holdout and earlier origins, showed leads winning. That result came from the wrong
+evaluation window and is withdrawn. The conversion result is also partly in-sample, since the same
+development data chose the model. The agent's answers about these forecasts have not yet been
+checked with a live model run.
 
 ## Forecast study (pre-registered)
 
