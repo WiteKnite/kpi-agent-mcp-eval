@@ -1,8 +1,8 @@
 {
-  "step": 2,
+  "step": 3,
   "choice": {
     "conversion_rate_pct": "ma3",
-    "leads": "naive",
+    "leads": "ma3",
     "avg_first_response_minutes": "ma3"
   }
 }
