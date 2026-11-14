@@ -75,3 +75,37 @@ def test_golden_set_is_consistent_with_tools():
 def test_unknown_month_raises():
     with pytest.raises(ValueError):
         tools.kpi_summary("1999-01")
+
+
+def test_kpi_summary_channel_filter_matches_sql():
+    summary = tools.kpi_summary("2025-12", channel="whatsapp")
+    row = tools.run_query(
+        "SELECT COUNT(*) AS n, SUM(converted) AS c FROM leads "
+        "WHERE month='2025-12' AND channel='whatsapp'"
+    )[0]
+    assert summary["channel"] == "whatsapp"
+    assert summary["leads"] == row["n"]
+    assert summary["conversion_rate_pct"] == round(100 * row["c"] / row["n"], 2)
+
+
+def test_kpi_summary_rep_filter_matches_sql():
+    summary = tools.kpi_summary("2025-12", rep="Amira")
+    row = tools.run_query(
+        "SELECT COUNT(*) AS n, SUM(converted) AS c FROM leads WHERE month='2025-12' AND rep='Amira'"
+    )[0]
+    assert summary["rep"] == "Amira"
+    assert summary["leads"] == row["n"]
+    assert summary["conversion_rate_pct"] == round(100 * row["c"] / row["n"], 2)
+
+
+def test_filters_without_values_match_the_unfiltered_summary():
+    assert tools.kpi_summary("2025-12") == tools.kpi_summary("2025-12", channel=None, rep=None)
+
+
+@pytest.mark.parametrize(
+    "kwargs",
+    [{"channel": "fax"}, {"rep": "Nobody"}, {"channel": "email", "rep": "Nobody"}],
+)
+def test_unknown_filter_value_raises(kwargs):
+    with pytest.raises(ValueError, match="unknown"):
+        tools.kpi_summary("2025-12", **kwargs)

@@ -44,10 +44,20 @@ TOOL_SCHEMAS = [
     },
     {
         "name": "kpi_summary",
-        "description": "Leads, conversions, conversion rate (%) and average first-response minutes for a month.",
+        "description": (
+            "Leads, conversions, conversion rate (%) and average first-response minutes for a month, "
+            "optionally for one channel and/or one sales rep."
+        ),
         "input_schema": {
             "type": "object",
-            "properties": {"month": {"type": "string", "description": "YYYY-MM"}},
+            "properties": {
+                "month": {"type": "string", "description": "YYYY-MM"},
+                "channel": {"type": "string", "enum": ["web_form", "whatsapp", "phone", "email"]},
+                "rep": {
+                    "type": "string",
+                    "description": "Sales rep name: Amira, Bruno, Chen, Dana or Eli",
+                },
+            },
             "required": ["month"],
         },
     },

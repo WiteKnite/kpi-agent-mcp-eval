@@ -45,19 +45,38 @@ def run_query(sql: str, limit: int = MAX_ROWS) -> list[dict[str, Any]]:
         return [dict(r) for r in cur.fetchmany(limit)]
 
 
-def kpi_summary(month: str) -> dict[str, Any]:
-    """Leads, conversions, conversion rate (%) and average first-response time for a month (YYYY-MM)."""
+def _known_values(column: str) -> set[str]:
+    with _connect() as con:
+        return {r[0] for r in con.execute(f"SELECT DISTINCT {column} FROM leads")}
+
+
+def kpi_summary(month: str, channel: str | None = None, rep: str | None = None) -> dict[str, Any]:
+    """Leads, conversions, conversion rate (%) and average first-response time for a month (YYYY-MM).
+
+    Optionally filter to one channel and/or one sales rep.
+    """
+    where, params = ["month = ?"], [month]
+    filters = {}
+    for column, value in (("channel", channel), ("rep", rep)):
+        if value is None:
+            continue
+        if value not in _known_values(column):
+            raise ValueError(f"unknown {column}: {value}")
+        where.append(f"{column} = ?")
+        params.append(value)
+        filters[column] = value
     with _connect() as con:
         row = con.execute(
-            """SELECT COUNT(*) AS leads, SUM(converted) AS conversions,
-                      AVG(first_response_minutes) AS avg_response
-               FROM leads WHERE month = ?""",
-            (month,),
+            "SELECT COUNT(*) AS leads, SUM(converted) AS conversions, "
+            "AVG(first_response_minutes) AS avg_response "
+            f"FROM leads WHERE {' AND '.join(where)}",
+            params,
         ).fetchone()
     if not row["leads"]:
-        raise ValueError(f"no data for month {month}")
+        raise ValueError(f"no data for month {month} with filters {filters}")
     return {
         "month": month,
+        **filters,
         "leads": row["leads"],
         "conversions": row["conversions"],
         "conversion_rate_pct": round(100 * row["conversions"] / row["leads"], 2),

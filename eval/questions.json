@@ -38,5 +38,25 @@
     "question": "Which channel contributed most to the change in conversion rate between 2025-06 and 2025-12?",
     "expected": "email",
     "kind": "text"
+  },
+  {
+    "id": "conv_whatsapp_dec",
+    "question": "What was the conversion rate in percent for WhatsApp leads in 2025-12?",
+    "expected": 2.08,
+    "kind": "number",
+    "tolerance": 0.05
+  },
+  {
+    "id": "conv_amira_dec",
+    "question": "What was the conversion rate in percent for sales rep Amira in 2025-12?",
+    "expected": 4.35,
+    "kind": "number",
+    "tolerance": 0.05
+  },
+  {
+    "id": "top_rep_q4",
+    "question": "Which sales rep had the highest conversion rate in Q4 2025 (October to December)?",
+    "expected": "Chen",
+    "kind": "text"
   }
 ]

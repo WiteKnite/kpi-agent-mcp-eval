@@ -15,7 +15,7 @@ It is not a production system.
 
 ```
 data/generate_data.py      synthetic, deterministic SQLite funnel data (12 months of leads)
-src/kpi_agent/tools.py     read-only tools: list_tables, describe_table, run_query, kpi_summary, kpi_drivers
+src/kpi_agent/tools.py     read-only tools: list_tables, describe_table, run_query, kpi_summary (optional channel and rep filters), kpi_drivers
 src/kpi_agent/mcp_server.py  MCP server (stdio) exposing the same tools
 src/kpi_agent/agent.py     tool-use loop with the Anthropic SDK
 src/kpi_agent/tracing.py   optional Langfuse tracing (no-op without keys)
@@ -33,7 +33,7 @@ pip install -r requirements.txt
 
 python data/generate_data.py      # creates data/sales.db
 python eval/build_golden.py       # regenerates eval/questions.json (already committed)
-pytest                            # 17 tests, no API key needed
+pytest                            # 23 tests, no API key needed
 python eval/run_eval.py --offline # validates the golden set against the tools
 ```
 
@@ -90,11 +90,14 @@ never produces the expected values, so a wrong answer is caught instead of grade
 
 ## Limits
 
-- Synthetic data and six questions: a demonstration of the method, not a benchmark.
+- Synthetic data and nine questions: a demonstration of the method, not a benchmark.
+- Channel and rep cells have few conversions each (often under 10 a month), so a single rate
+  can swing a lot. Read per-channel and per-rep rates as indicative, not precise.
 - The offline tests and the golden-set check run without an API key. The online agent run and the
   Langfuse integration need keys and are not part of the automated tests.
 - Manual live runs: the agent passed 6 of 6 questions in two complete runs with the default model
-  (November 2026). Langfuse tracing has not been exercised yet.
+  (November 2026). Those runs predate the three channel and rep questions, which have not yet been
+  run live. Langfuse tracing has not been exercised yet.
 - `kpi_drivers` ignores mix effects, so its contributions only approximate the total change.
 
 ## Next steps

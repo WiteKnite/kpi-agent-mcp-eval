@@ -35,6 +35,16 @@ def offline_answer(item: dict) -> str:
         return str(tools.kpi_summary("2025-12")["avg_first_response_minutes"])
     if qid == "resp_jun":
         return str(tools.kpi_summary("2025-06")["avg_first_response_minutes"])
+    if qid == "conv_whatsapp_dec":
+        return str(tools.kpi_summary("2025-12", channel="whatsapp")["conversion_rate_pct"])
+    if qid == "conv_amira_dec":
+        return str(tools.kpi_summary("2025-12", rep="Amira")["conversion_rate_pct"])
+    if qid == "top_rep_q4":
+        sql = (
+            "SELECT rep FROM leads WHERE month IN ('2025-10','2025-11','2025-12') GROUP BY rep "
+            "ORDER BY 1.0*SUM(converted)/COUNT(*) DESC LIMIT 1"
+        )
+        return tools.run_query(sql)[0]["rep"]
     if qid == "leads_q4":
         sql = "SELECT COUNT(*) AS n FROM leads WHERE month IN ('2025-10','2025-11','2025-12')"
         return str(tools.run_query(sql)[0]["n"])

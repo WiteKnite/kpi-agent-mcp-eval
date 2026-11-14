@@ -19,6 +19,12 @@ def build() -> list[dict]:
         "ORDER BY 1.0*SUM(converted)/COUNT(*) DESC LIMIT 1"
     )[0]["channel"]
     top_driver = tools.kpi_drivers("2025-06", "2025-12", "channel")[0]["channel"]
+    whatsapp_dec = tools.kpi_summary("2025-12", channel="whatsapp")
+    amira_dec = tools.kpi_summary("2025-12", rep="Amira")
+    top_rep_q4 = tools.run_query(
+        "SELECT rep FROM leads WHERE month IN ('2025-10','2025-11','2025-12') GROUP BY rep "
+        "ORDER BY 1.0*SUM(converted)/COUNT(*) DESC LIMIT 1"
+    )[0]["rep"]
     return [
         {
             "id": "conv_dec",
@@ -58,6 +64,26 @@ def build() -> list[dict]:
             "id": "top_driver",
             "question": "Which channel contributed most to the change in conversion rate between 2025-06 and 2025-12?",
             "expected": top_driver,
+            "kind": "text",
+        },
+        {
+            "id": "conv_whatsapp_dec",
+            "question": "What was the conversion rate in percent for WhatsApp leads in 2025-12?",
+            "expected": whatsapp_dec["conversion_rate_pct"],
+            "kind": "number",
+            "tolerance": 0.05,
+        },
+        {
+            "id": "conv_amira_dec",
+            "question": "What was the conversion rate in percent for sales rep Amira in 2025-12?",
+            "expected": amira_dec["conversion_rate_pct"],
+            "kind": "number",
+            "tolerance": 0.05,
+        },
+        {
+            "id": "top_rep_q4",
+            "question": "Which sales rep had the highest conversion rate in Q4 2025 (October to December)?",
+            "expected": top_rep_q4,
             "kind": "text",
         },
     ]
