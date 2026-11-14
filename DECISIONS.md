@@ -50,6 +50,13 @@ development data: 0.8 times the standard error (conversion rate and response tim
 the standard deviation of monthly counts (leads, an approximation). No model can reliably beat
 this floor on the same data.
 
+**Correction (made before any holdout run):** the first step-1 run computed the floor over all
+development months, including the pre-launch months. Response-time variation there is about 40
+minutes, which made the floor 0.79 minutes, below the naive model's error of 0.09. A floor that a
+model beats cannot be right. The floor is now computed over post-launch development months
+(2025-07 to 2026-06), the same period the forecasts are scored on. The candidates and the choice
+rule are unchanged.
+
 ## Results
 
 (Appended below as each step is run.)
